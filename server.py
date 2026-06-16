@@ -39,8 +39,8 @@ class WeChatHandler(http.server.SimpleHTTPRequestHandler):
         # 静态文件：去掉 /projects/wx-chat 前缀
         if path.startswith(PREFIX):
             stripped = path[len(PREFIX):]
-            if not stripped:
-                # /projects/wx-chat/ → 重定向到 index.html
+            if not stripped or stripped == "/":
+                # /projects/wx-chat 或 /projects/wx-chat/ → 重定向到 index.html
                 self.send_response(301)
                 self.send_header("Location", f"{PREFIX}/index.html?v={VERSION}")
                 self.end_headers()
