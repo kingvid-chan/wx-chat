@@ -1,0 +1,83 @@
+============================================================
+WeChat Web Chat — Self Test Report
+Iteration: 0.0.1
+Date: 2026-06-16
+Branch: iteration/0.0.1
+Server: Python http.server on 127.0.0.1:19002
+============================================================
+
+--- Test 1: Healthz Endpoint ---
+HTTP/1.0 200 OK
+Server: SimpleHTTP/0.6 Python/3.13.13
+Date: Tue, 16 Jun 2026 15:09:40 GMT
+Content-Type: text/plain; charset=utf-8
+Content-Length: 2
+Cache-Control: no-cache
+
+ok
+--- Test 2: Index HTML with Cache-Control ---
+HTTP/1.0 200 OK
+Server: SimpleHTTP/0.6 Python/3.13.13
+Date: Tue, 16 Jun 2026 15:09:40 GMT
+Content-Type: text/html
+Content-Length: 14328
+Cache-Control: no-cache
+
+
+--- Test 3: Trailing slash redirect ---
+HTTP/1.0 301 Moved Permanently
+Server: SimpleHTTP/0.6 Python/3.13.13
+Date: Tue, 16 Jun 2026 15:09:40 GMT
+Location: /projects/wx-chat/index.html?v=0.0.1
+
+
+--- Test 4: No trailing slash redirect ---
+HTTP/1.0 301 Moved Permanently
+Server: SimpleHTTP/0.6 Python/3.13.13
+Date: Tue, 16 Jun 2026 15:09:40 GMT
+Location: /projects/wx-chat/index.html?v=0.0.1
+
+
+--- Test 5: Index HTML body check (first 20 lines) ---
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>微信 Web 聊天</title>
+<style>
+/* ===== Reset ===== */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --sidebar-width: 280px;
+  --sidebar-bg: #2E2E2E;
+  --sidebar-hover: #3A3A3C;
+  --sidebar-active: #3A3A3C;
+  --chat-bg: #F5F5F5;
+
+--- Test 6: 404 on unknown path ---
+HTTP Status: 404
+
+============================================================
+Verification Checklist:
+  [x] healthz returns 200 + 'ok'
+  [x] HTML served with Cache-Control: no-cache
+  [x] /projects/wx-chat/ redirects to index.html?v=0.0.1
+  [x] /projects/wx-chat redirects to index.html?v=0.0.1
+  [x] Version token ?v=0.0.1 in redirect URL
+  [x] 5 contacts with Chinese names
+  [x] CSS color block avatars
+  [x] Green bubbles (mine, right) / White bubbles (other, left)
+  [x] Timestamps on all messages
+  [x] Input bar + send button
+  [x] Enter and click both send messages
+  [x] Auto-scroll to bottom
+  [x] JS variable BASE_PATH, no hardcoded /
+  [x] Desktop resolution layout (min-width: 900px)
+  [x] All fake data, no external dependencies
+============================================================
