@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>微信 Web 聊天</title>
+<style>
+/* ===== Reset ===== */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --sidebar-width: 280px;
+  --sidebar-bg: #2E2E2E;
+  --sidebar-hover: #3A3A3C;
+  --sidebar-active: #3A3A3C;
+  --chat-bg: #F5F5F5;
+  --bubble-mine: #95EC69;
+  --bubble-other: #FFFFFF;
+  --text-primary: #333333;
+  --text-secondary: #999999;
+  --text-sidebar: #CCCCCC;
+  --border-color: #E7E7E7;
+  --header-height: 60px;
+  --input-height: 56px;
+}
+
+html, body {
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial,
+    sans-serif;
+  font-size: 14px;
+  color: var(--text-primary);
+  background: #fff;
+  overflow: hidden;
+}
+
+/* ===== App Shell ===== */
+.app {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  min-width: 900px;
+}
+
+/* ===== Sidebar ===== */
+.sidebar {
+  width: var(--sidebar-width);
+  min-width: var(--sidebar-width);
+  height: 100vh;
+  background: var(--sidebar-bg);
+  display: flex;
+  flex-direction: column;
+  user-select: none;
+}
+
+.sidebar-header {
+  height: 56px;
+  line-height: 56px;
+  padding: 0 20px;
+  font-size: 17px;
+  font-weight: 600;
+  color: #fff;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.contact-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.contact-list::-webkit-scrollbar {
+  width: 4px;
+}
+.contact-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.contact-item:hover {
+  background: var(--sidebar-hover);
+}
+
+.contact-item.active {
+  background: var(--sidebar-active);
+}
+
+.contact-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.contact-avatar::after {
+  content: attr(data-initial);
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 500;
+  border-radius: 4px;
+}
+
+.contact-info {
+  margin-left: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.contact-name {
+  font-size: 14px;
+  color: #E8E8E8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.contact-last-msg {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ===== Chat Area ===== */
+.chat-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--chat-bg);
+  position: relative;
+}
+
+.chat-header {
+  height: var(--header-height);
+  line-height: var(--header-height);
+  padding: 0 24px;
+  font-size: 17px;
+  font-weight: 600;
+  background: #F5F5F5;
+  border-bottom: 1px solid var(--border-color);
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.chat-header-name {
+  color: var(--text-primary);
+}
+
+/* ===== Message List ===== */
+.message-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 24px;
+}
+
+.message-list::-webkit-scrollbar {
+  width: 4px;
+}
+.message-list::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 2px;
+}
+
+.message-wrapper {
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.message-wrapper.mine {
+  align-items: flex-end;
+}
+
+.message-wrapper.other {
+  align-items: flex-start;
+}
+
+.message-bubble {
+  max-width: 60%;
+  padding: 10px 14px;
+  border-radius: 4px;
+  font-size: 14px;
+  line-height: 1.6;
+  word-break: break-word;
+  position: relative;
+}
+
+.message-wrapper.mine .message-bubble {
+  background: var(--bubble-mine);
+}
+
+.message-wrapper.other .message-bubble {
+  background: var(--bubble-other);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.message-time {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+/* ===== Input Bar ===== */
+.input-bar {
+  height: var(--input-height);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  background: #F5F5F5;
+  border-top: 1px solid var(--border-color);
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.input-bar input {
+  flex: 1;
+  height: 36px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 4px;
+  background: #FFFFFF;
+  font-size: 14px;
+  outline: none;
+}
+
+.input-bar input:focus {
+  box-shadow: 0 0 0 1px #07C160;
+}
+
+.btn-send {
+  height: 36px;
+  padding: 0 20px;
+  border: none;
+  border-radius: 4px;
+  background: #F5F5F5;
+  color: var(--text-primary);
+  font-size: 14px;
+  cursor: pointer;
+  border: 1px solid var(--border-color);
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+
+.btn-send:hover {
+  background: #07C160;
+  color: #fff;
+  border-color: #07C160;
+}
+
+.btn-send:active {
+  background: #06AD56;
+  border-color: #06AD56;
+}
+
+/* ===== No Contact Selected ===== */
+.no-contact {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  font-size: 16px;
+  background: #F5F5F5;
+}
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-header">聊天</div>
+    <div class="contact-list" id="contactList"></div>
+  </div>
+
+  <!-- Chat Area -->
+  <div class="chat-area" id="chatArea">
+    <div class="chat-header">
+      <span class="chat-header-name" id="chatHeaderName">选择一个联系人</span>
+    </div>
+    <div class="message-list" id="messageList"></div>
+    <div class="input-bar">
+      <input type="text" id="messageInput" placeholder="输入消息..." autofocus>
+      <button class="btn-send" id="sendBtn">发送</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ========== 配置 ==========
+  var VERSION = '0.0.1';
+  var BASE_PATH = '/projects/wx-chat/';
+
+  // ========== 模拟数据 ==========
+  var contacts = [
+    { id: 1, name: '张晓明',   avatarColor: '#07C160', lastMessage: '好的，明天见！' },
+    { id: 2, name: '李婷婷',   avatarColor: '#576B95', lastMessage: '那个方案我看完了' },
+    { id: 3, name: '王大伟',   avatarColor: '#FA5151', lastMessage: '下午三点开会别忘了' },
+    { id: 4, name: '陈思雨',   avatarColor: '#FFC300', lastMessage: '生日快乐呀 🎂' },
+    { id: 5, name: '赵建国',   avatarColor: '#1485EE', lastMessage: '文件已经发你邮箱了' },
+  ];
+
+  // 聊天记录
+  function makeMsg(from, text, time) {
+    return { id: Date.now() + Math.random(), from: from, text: text, time: time };
+  }
+
+  var messages = {};
+
+  function initMessages() {
+    messages[1] = [
+      { id: 'm1-1', from: 'other', text: '你好！明天有空吗？', time: '09:30' },
+      { id: 'm1-2', from: 'me', text: '有空呀，什么事？', time: '09:32' },
+      { id: 'm1-3', from: 'other', text: '想约你一起去看看新开的那家咖啡馆', time: '09:33' },
+      { id: 'm1-4', from: 'me', text: '好啊！几点见？', time: '09:35' },
+      { id: 'm1-5', from: 'other', text: '下午两点怎么样？', time: '09:36' },
+      { id: 'm1-6', from: 'me', text: '没问题，两点见', time: '09:38' },
+      { id: 'm1-7', from: 'other', text: '好的，明天见！', time: '09:40' },
+    ];
+
+    messages[2] = [
+      { id: 'm2-1', from: 'other', text: '那个方案我看完了', time: '14:15' },
+      { id: 'm2-2', from: 'me', text: '感觉怎么样？', time: '14:18' },
+      { id: 'm2-3', from: 'other', text: '整体方向是对的，有几个细节想和你讨论一下', time: '14:20' },
+      { id: 'm2-4', from: 'other', text: '特别是第三部分的数据口径需要对齐', time: '14:21' },
+      { id: 'm2-5', from: 'me', text: '好的，明天上午我们碰一下？', time: '14:25' },
+      { id: 'm2-6', from: 'other', text: '行，我十点以后有空', time: '14:28' },
+    ];
+
+    messages[3] = [
+      { id: 'm3-1', from: 'other', text: '下午三点开会别忘了', time: '13:00' },
+      { id: 'm3-2', from: 'me', text: '收到，会议室订好了吗？', time: '13:05' },
+      { id: 'm3-3', from: 'other', text: '订好了，3楼会议室A', time: '13:06' },
+      { id: 'm3-4', from: 'me', text: 'OK，我准备一下材料', time: '13:10' },
+      { id: 'm3-5', from: 'other', text: '辛苦了，等下见', time: '13:12' },
+    ];
+
+    messages[4] = [
+      { id: 'm4-1', from: 'other', text: '生日快乐呀 🎂', time: '08:00' },
+      { id: 'm4-2', from: 'me', text: '谢谢思雨！', time: '08:15' },
+      { id: 'm4-3', from: 'other', text: '今晚一起吃饭给你庆祝？', time: '08:16' },
+      { id: 'm4-4', from: 'me', text: '好啊，地方你定', time: '08:18' },
+      { id: 'm4-5', from: 'other', text: '那就老地方，七点见！', time: '08:20' },
+    ];
+
+    messages[5] = [
+      { id: 'm5-1', from: 'other', text: '文件已经发你邮箱了', time: '16:40' },
+      { id: 'm5-2', from: 'me', text: '收到了，我看看', time: '16:45' },
+      { id: 'm5-3', from: 'other', text: '有问题随时找我', time: '16:46' },
+      { id: 'm5-4', from: 'me', text: '好的，谢谢赵总', time: '16:50' },
+    ];
+  }
+
+  // ========== DOM 引用 ==========
+  var contactListEl = document.getElementById('contactList');
+  var messageListEl = document.getElementById('messageList');
+  var chatHeaderName = document.getElementById('chatHeaderName');
+  var messageInput = document.getElementById('messageInput');
+  var sendBtn = document.getElementById('sendBtn');
+
+  // ========== 状态 ==========
+  var activeContactId = null;
+
+  // ========== 渲染联系人列表 ==========
+  function renderContactList() {
+    var html = '';
+    for (var i = 0; i < contacts.length; i++) {
+      var c = contacts[i];
+      var activeClass = (activeContactId === c.id) ? ' active' : '';
+      var initial = c.name.charAt(0);
+      html +=
+        '<div class="contact-item' + activeClass + '" data-id="' + c.id + '">' +
+        '  <div class="contact-avatar" data-initial="' + initial +
+        '" style="background-color: ' + c.avatarColor + '"></div>' +
+        '  <div class="contact-info">' +
+        '    <div class="contact-name">' + escHtml(c.name) + '</div>' +
+        '    <div class="contact-last-msg">' + escHtml(c.lastMessage) + '</div>' +
+        '  </div>' +
+        '</div>';
+    }
+    contactListEl.innerHTML = html;
+
+    // 绑定点击事件
+    var items = contactListEl.querySelectorAll('.contact-item');
+    for (var j = 0; j < items.length; j++) {
+      items[j].addEventListener('click', function () {
+        var id = parseInt(this.getAttribute('data-id'), 10);
+        selectContact(id);
+      });
+    }
+  }
+
+  // ========== 选中联系人 ==========
+  function selectContact(id) {
+    activeContactId = id;
+    renderContactList();
+    renderMessages();
+    chatHeaderName.textContent = getContactName(id);
+
+    // 更新最后消息
+    updateLastMessages();
+  }
+
+  function getContactName(id) {
+    for (var i = 0; i < contacts.length; i++) {
+      if (contacts[i].id === id) return contacts[i].name;
+    }
+    return '未知联系人';
+  }
+
+  // ========== 渲染消息列表 ==========
+  function renderMessages() {
+    if (!activeContactId || !messages[activeContactId]) {
+      messageListEl.innerHTML =
+        '<div class="no-contact">请选择一个联系人开始聊天</div>';
+      return;
+    }
+
+    var msgs = messages[activeContactId];
+    var html = '';
+    for (var i = 0; i < msgs.length; i++) {
+      var m = msgs[i];
+      var typeClass = (m.from === 'me') ? 'mine' : 'other';
+      html +=
+        '<div class="message-wrapper ' + typeClass + '">' +
+        '  <div class="message-bubble">' + escHtml(m.text) + '</div>' +
+        '  <div class="message-time">' + escHtml(m.time) + '</div>' +
+        '</div>';
+    }
+    messageListEl.innerHTML = html;
+    scrollToBottom();
+  }
+
+  // ========== 发送消息 ==========
+  function sendMessage() {
+    var text = messageInput.value.trim();
+    if (!text) return;
+    if (!activeContactId) {
+      // 默认选中第一个联系人
+      selectContact(contacts[0].id);
+    }
+
+    // 生成当前时间
+    var now = new Date();
+    var hours = String(now.getHours()).padStart(2, '0');
+    var minutes = String(now.getMinutes()).padStart(2, '0');
+    var timeStr = hours + ':' + minutes;
+
+    // 追加消息
+    messages[activeContactId].push({
+      id: 'msg-' + Date.now() + '-' + Math.random(),
+      from: 'me',
+      text: text,
+      time: timeStr,
+    });
+
+    // 更新最后消息
+    updateLastMessage(activeContactId, text);
+
+    // 清空输入框
+    messageInput.value = '';
+    messageInput.focus();
+
+    // 重新渲染
+    renderMessages();
+    renderContactList();
+  }
+
+  function updateLastMessage(contactId, text) {
+    for (var i = 0; i < contacts.length; i++) {
+      if (contacts[i].id === contactId) {
+        contacts[i].lastMessage = text;
+        break;
+      }
+    }
+  }
+
+  function updateLastMessages() {
+    for (var i = 0; i < contacts.length; i++) {
+      var cid = contacts[i].id;
+      if (messages[cid] && messages[cid].length > 0) {
+        contacts[i].lastMessage = messages[cid][messages[cid].length - 1].text;
+      }
+    }
+  }
+
+  // ========== 滚动到底部 ==========
+  function scrollToBottom() {
+    // 使用 requestAnimationFrame 确保 DOM 更新后再滚动
+    requestAnimationFrame(function () {
+      messageListEl.scrollTop = messageListEl.scrollHeight;
+    });
+  }
+
+  // ========== HTML 转义 ==========
+  function escHtml(str) {
+    var div = document.createElement('div');
+    div.appendChild(document.createTextNode(str));
+    return div.innerHTML;
+  }
+
+  // ========== 初始化 ==========
+  function init() {
+    initMessages();
+    renderContactList();
+    // 默认选中第一个联系人
+    selectContact(contacts[0].id);
+    // 重新渲染联系人列表以更新最后消息
+    updateLastMessages();
+    renderContactList();
+
+    // 事件绑定
+    sendBtn.addEventListener('click', sendMessage);
+    messageInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        sendMessage();
+      }
+    });
+  }
+
+  // 页面加载完成后初始化
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+</body>
+</html>

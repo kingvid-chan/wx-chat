@@ -1,0 +1,19 @@
+Hermes Independent Verification — 0.0.1
+=========================================
+Date: 2026-06-16T15:14:33Z
+Verified commit: ffb8a046abcafba3c6d398d47ae377794da4aea9
+Branch: iteration/0.0.1
+Server: Python http.server on 127.0.0.1:19002
+
+Acceptance Criteria:
+[x] healthz returns 200 + 'ok'
+[x] index.html returns 200
+[x] Cache-Control: no-cache on HTML response
+[x] /projects/wx-chat/ redirects to index.html?v=0.0.1
+[x] /projects/wx-chat redirects to index.html?v=0.0.1
+[x] Unknown path returns 404
+[x] Healthz has Cache-Control: no-cache
+[x] HTML contains DOCTYPE and valid structure
+[x] Contact list with contact items, avatars, names
+[x] BASE_PATH JS variable for path awareness
+[x] Version token ?v=0.0.1 in redirect URLs
