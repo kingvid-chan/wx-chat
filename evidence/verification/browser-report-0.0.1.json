@@ -1,0 +1,79 @@
+{
+  "schema_version": 3,
+  "public_url": "http://120.24.117.67/projects/wx-chat/",
+  "final_url": "http://120.24.117.67/projects/wx-chat/index.html?v=0.0.1",
+  "base_path_ok": true,
+  "release_version": "0.0.1",
+  "document_response_headers": {
+    "status": 200,
+    "content-type": "text/html; charset=utf-8",
+    "cache-control": "no-cache"
+  },
+  "static_assets": [],
+  "stylesheets": [
+    {
+      "resolved_url": "http://120.24.117.67/projects/wx-chat/index.html?v=0.0.1",
+      "http_status": 200,
+      "type": "inline",
+      "note": "All CSS is inline in <style> tag"
+    }
+  ],
+  "asset_probes": [
+    {
+      "url": "http://120.24.117.67/projects/wx-chat/healthz?v=0.0.1",
+      "http_status": 200,
+      "type": "healthz"
+    },
+    {
+      "url": "http://120.24.117.67/projects/wx-chat/index.html?v=0.0.1",
+      "http_status": 200,
+      "type": "document"
+    }
+  ],
+  "pages": [
+    {
+      "url": "http://120.24.117.67/projects/wx-chat/index.html?v=0.0.1",
+      "title": "微信 Web 聊天",
+      "ok": true
+    }
+  ],
+  "workflow_checks": [
+    {
+      "name": "contact_list_display",
+      "description": "5 contacts shown",
+      "ok": true
+    },
+    {
+      "name": "contact_switching",
+      "description": "Contact switching works",
+      "ok": true
+    },
+    {
+      "name": "message_send",
+      "description": "Message send works",
+      "ok": true
+    },
+    {
+      "name": "message_bubbles",
+      "description": "Green/white bubbles",
+      "ok": true
+    },
+    {
+      "name": "contact_preview_update",
+      "description": "Preview updates",
+      "ok": true
+    }
+  ],
+  "failed_requests": [],
+  "http_errors": [],
+  "console_errors": [],
+  "screenshots": [
+    "evidence/verification/browser-0.0.1.png"
+  ],
+  "visual_review": {
+    "provider": "kimi",
+    "model": "moonshot-v1-8k-vision-preview",
+    "verdict": "pass",
+    "issues": []
+  }
+}
