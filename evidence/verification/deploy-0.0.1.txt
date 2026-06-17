@@ -1,5 +1,5 @@
 === Aliyun Deploy Evidence ===
-Date: $(date -u '+%Y-%m-%dT%H:%M:%SZ')
+Date: 2026-06-17T00:47:36Z
 
 === Server Info ===
 Host: aliyun-cowork (120.24.117.67)
@@ -7,20 +7,25 @@ OS: Ubuntu 24.04, Python 3.12.3
 
 === Deployment ===
 Deploy root: /srv/codingagent/wx-chat
+Method: git clone via SSH (git@github.com:kingvid-chan/wx-chat.git), checkout tags/0.0.1
+Commit: bd241d51a5b9b68096ec2fb0f6f4f1d6d4a32dfc
+Tag: 0.0.1
 Service: codingagent-wx-chat
 Port: 127.0.0.1:19002
-Deployed via: git archive from local + scp
 
 === Systemd ===
-systemctl is-active codingagent-wx-chat: active
-systemctl is-enabled codingagent-wx-chat: enabled
+Unit: codingagent-wx-chat.service
+ExecStart: /usr/bin/python3 /srv/codingagent/wx-chat/server.py
+systemctl is-active: active
+systemctl is-enabled: enabled
 
 === Nginx ===
 nginx -t: OK
-Config: /etc/nginx/snippets/cqw-locations.conf
+HTTP: /etc/nginx/sites-enabled/cqw.life (location /projects/wx-chat/)
+HTTPS: /etc/nginx/snippets/cqw-locations.conf (location /projects/wx-chat/)
 Proxy: /projects/wx-chat/ -> http://127.0.0.1:19002/projects/wx-chat/
 
 === Public Health Check ===
 curl http://120.24.117.67/projects/wx-chat/healthz: 200 "ok"
-curl http://120.24.117.67/projects/wx-chat/index.html: 200 text/html Cache-Control: no-cache
+curl http://120.24.117.67/projects/wx-chat/index.html: 200 text/html (14328 bytes)
 curl http://120.24.117.67/projects/wx-chat/: 301 -> /projects/wx-chat/index.html?v=0.0.1
