@@ -27,7 +27,7 @@ class WeChatHandler(http.server.SimpleHTTPRequestHandler):
         super().__init__(*args, directory=root_dir, **kwargs)
 
     def do_GET(self):
-        """处理 GET 请求，路由分发。"""
+        """处理 GET/HEAD 请求，路由分发。"""
         parsed = urllib.parse.urlparse(self.path)
         path = parsed.path
 
@@ -60,7 +60,8 @@ class WeChatHandler(http.server.SimpleHTTPRequestHandler):
 
         # 其他未匹配路径
         self.send_error(404)
-        self.end_headers()
+
+    do_HEAD = do_GET
 
     def _handle_healthz(self):
         """healthz 健康检查端点。"""
@@ -79,7 +80,6 @@ class WeChatHandler(http.server.SimpleHTTPRequestHandler):
 
         if not os.path.exists(fs_path) or os.path.isdir(fs_path):
             self.send_error(404)
-            self.end_headers()
             return
 
         # 判断 MIME 类型
@@ -91,7 +91,6 @@ class WeChatHandler(http.server.SimpleHTTPRequestHandler):
                 body = f.read()
         except OSError:
             self.send_error(404)
-            self.end_headers()
             return
 
         self.send_response(200)
